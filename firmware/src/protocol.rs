@@ -7,10 +7,6 @@
 //!
 //! Guarded by a FrameParser that resyncs on garbage, so corrupted bytes stay
 //! observable on the wire instead of desynchronising the stream.
-//!
-//! The firmware also owns the bit-bang bus exercisers in [`super::probe`] —
-//! firmware-only code lives here, not in a crate shared with the host, which
-//! would only compile it to never call it.
 
 #![cfg_attr(not(test), forbid(unsafe_code))]
 

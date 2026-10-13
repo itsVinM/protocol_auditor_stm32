@@ -5,8 +5,6 @@
 #![no_std]
 #![no_main]
 
-mod probe_gpio;
-
 use defmt::info;
 use defmt_rtt as _;
 use embassy_executor::Spawner;
