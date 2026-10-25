@@ -1,0 +1,20 @@
+# Keep the build context tiny. Without this file, `docker build` uploads the
+# host's target/ directories as build context: 892 MB of the 894 MB in this
+# repo. Nothing here is needed to build the image.
+
+# Build artifacts
+target/
+**/target
+*.elf
+
+# VCS
+.git
+.gitignore
+.github
+
+# Not build inputs
+*.md
+Dockerfile*
+.dockerignore
+compose.yaml
+Makefile

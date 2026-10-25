@@ -1,0 +1,50 @@
+# faultforge — the sandbox as a compose file.
+#
+#   docker compose build                 # both images, tests run inside
+#   docker compose run --rm ports        # what serial ports can the container see?
+#   docker compose run --rm sender --profile stress --packets 5000
+#   docker compose run --rm flash        # flash + debug-attached run (needs hardware)
+#
+# Replaces init-docker.sh: the device passthrough, privileged mode and USB
+# volume that the old script spelled out in bash are declarative here, and
+# `docker compose config` will tell you what it resolved to.
+
+name: faultforge
+
+services:
+  # The bench sender. Overrides after the service name are passed straight to
+  # the binary: `docker compose run --rm sender --abort`.
+  sender:
+    build:
+      context: .
+      target: runtime
+    image: faultforge:local
+    # ST-LINK VCP passthrough. On Linux this is usually /dev/ttyACM0 or
+    # /dev/ttyUSB0; on macOS pass an unprivileged /dev/cu.* path instead.
+    devices:
+      - "${SERIAL_DEVICE:-/dev/ttyACM0}:${SERIAL_DEVICE:-/dev/ttyACM0}"
+    command: ["--help"]
+
+  # Host-side tool. Never part of the sender image: probe-rs would drag a full
+  # Rust toolchain and libudev headers into it for no reason.
+  flash:
+    build:
+      context: .
+      target: flash
+    image: faultforge-flash:local
+    privileged: true
+    volumes:
+      - /dev/bus/usb:/dev/bus/usb
+    # CMD is overridden with the probe-rs subcommand: run / download / attach.
+    command: ["download", "/app/firmware.elf", "--chip", "STM32F401RETx"]
+
+  # Enumerate ports. A separate service only because it needs the device passed
+  # but no campaign arguments.
+  ports:
+    build:
+      context: .
+      target: runtime
+    image: faultforge:local
+    devices:
+      - "${SERIAL_DEVICE:-/dev/ttyACM0}:${SERIAL_DEVICE:-/dev/ttyACM0}"
+    command: ["--list-ports"]

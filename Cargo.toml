@@ -1,16 +1,14 @@
 [package]
-name = "faultforge"
+name = "protocol-auditor-stm32"
 version = "0.1.0"
 edition = "2021"
 
-# The bench-side sender. It is a single package with no workspace: the only
-# other crate in the repo is the firmware, which is its own workspace because it
-# cross-compiles to thumbv7em-none-eabihf. `firmware/` simply lives in a
-# subdirectory and is not referenced from here.
+# Host CLI for protocol_auditor_stm32.
+# Opens a serial port to the STM32 firmware and sends crafted frames
+# to audit parsing robustness (framing, CRC, safe resynchronization).
 
 [dependencies]
 serialport = { version = "4.7", default-features = false }
-tokio = { version = "1", features = ["rt-multi-thread", "time"] }
 
 [profile.release]
 opt-level = "z"

@@ -580,13 +580,8 @@ dependencies = [
  "embassy-stm32",
  "embassy-sync",
  "embassy-time",
- "faultforge-shared",
  "panic-probe",
 ]
-
-[[package]]
-name = "faultforge-shared"
-version = "0.1.0"
 
 [[package]]
 name = "find-msvc-tools"
