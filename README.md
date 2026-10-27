@@ -35,10 +35,16 @@ cargo run -- --list-tests
 ### Firmware
 ```sh
 cd firmware
-cargo build --release --target thumbv7em-none-eabihf
+cargo build --release --locked --target thumbv7em-none-eabihf
 ```
 
 Flash with your preferred tool (e.g. `openocd` or copy `.elf`/`.bin` as appropriate).
+
+The wire-protocol unit tests do not need an STM32. They run on the host target:
+```sh
+cd firmware
+cargo test --lib --target "$(rustc -vV | sed -n 's/^host: //p')"
+```
 
 ## Test Cases (planned)
 - `valid` – well-formed frame

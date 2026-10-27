@@ -450,6 +450,77 @@ mod tests {
     }
 
     #[test]
+    fn ping_pong_roundtrip() {
+        let (ping, pn) = encode(K_PING, &[]);
+        let mut parser = FrameParser::new();
+        let mut got = None;
+        for &b in &ping[..pn] {
+            if let Some(d) = parser.push(b) {
+                got = Some(d);
+            }
+        }
+        assert!(matches!(
+            got,
+            Some(Decoded::Frame {
+                kind: K_PING,
+                len: 0,
+                ..
+            })
+        ));
+
+        let (pong, n) = encode_pong();
+        let mut parser = FrameParser::new();
+        let mut got = None;
+        for &b in &pong[..n] {
+            if let Some(d) = parser.push(b) {
+                got = Some(d);
+            }
+        }
+        assert!(matches!(
+            got,
+            Some(Decoded::Frame {
+                kind: K_PONG,
+                len: 0,
+                ..
+            })
+        ));
+    }
+
+    #[test]
+    fn oversized_length_resyncs_to_next_frame() {
+        let mut p = FrameParser::new();
+        let mut out = Vec::new();
+        let (frame, n) = encode_sensor(3, 4, 0);
+        let prefix = [SYNC, 0xFF, 0x00];
+        for &b in prefix.iter().chain(&frame[..n]) {
+            if let Some(d) = p.push(b) {
+                out.push(d);
+            }
+        }
+        assert!(
+            out.iter()
+                .any(|d| matches!(d, Decoded::Frame { kind: K_SENSOR, .. })),
+            "oversized length should not consume the next valid frame: {out:?}"
+        );
+    }
+
+    #[test]
+    fn truncated_frame_does_not_emit() {
+        let mut p = FrameParser::new();
+        let (frame, n) = encode_sensor(1, 2, 3);
+        let mut out = Vec::new();
+        for &b in &frame[..n - 1] {
+            if let Some(d) = p.push(b) {
+                out.push(d);
+            }
+        }
+        assert!(
+            out.iter().all(|d| !matches!(d, Decoded::Frame { .. })),
+            "a truncated frame must wait for more bytes: {out:?}"
+        );
+    }
+
+    #[test]
     fn start_config_roundtrip() {
         let cfg = CampaignConfig {
             seed: 0xCAFE_1234,

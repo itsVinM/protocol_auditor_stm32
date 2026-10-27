@@ -13,7 +13,6 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use protocol::{encode_abort, encode_start, CampaignConfig};
-use serialport::SerialPort;
 
 const BAUD: u32 = 115_200;
 const DRAIN_MS: u64 = 1500;
@@ -73,7 +72,11 @@ fn find_port() -> Option<String> {
     if let Ok(ports) = serialport::available_ports() {
         for p in ports {
             let name = &p.port_name;
-            if name.contains("ttyACM") || name.contains("ttyUSB") || name.contains("usbmodem") || name.contains("cu.") {
+            if name.contains("ttyACM")
+                || name.contains("ttyUSB")
+                || name.contains("usbmodem")
+                || name.contains("cu.")
+            {
                 return Some(name.clone());
             }
         }
@@ -163,7 +166,9 @@ fn main() {
                     let _ = std::io::stdout().flush();
                 }
                 Ok(_) => thread::sleep(Duration::from_millis(5)),
-                Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => thread::sleep(Duration::from_millis(5)),
+                Err(ref e) if e.kind() == std::io::ErrorKind::TimedOut => {
+                    thread::sleep(Duration::from_millis(5))
+                }
                 Err(_) => break,
             }
         }

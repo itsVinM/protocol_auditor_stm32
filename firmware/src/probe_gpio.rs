@@ -4,7 +4,7 @@
 
 use core::marker::PhantomData;
 
-use faultforge_firmware::probe::GpioOps;
+use protocol_auditor_firmware::probe::GpioOps;
 
 const PIN_TABLE: [(u8, u16, bool); 14] = [
     // (port 0=GPIOA,1=GPIOB, pad, input?, )
